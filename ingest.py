@@ -88,7 +88,7 @@ def cleanStringData(strng):
      return strng
   return "not available"
 
-batch_size = 50  # number of embeddings we create and insert in a batch
+batch_size = 250  # number of embeddings we create and insert in a batch
 
 # function to create batches from Mongo cursor
 cursor = collection.find({}, batch_size=batch_size)

@@ -2,6 +2,16 @@
 
 ### set up server
 
+A pinecone vector db server is created through the PineCone console
+
+Follow the installation instructions and capture the api key and environment variables
+
+Use the ```ingest.py``` script to migrate mongo data from Atlas to PineCone, creating the vector indexes as part of the process.
+
+Pay attention to declared data types on each document, ensuring that all properties are uniformly cleansed throughout the collection
+
+
+
 
 ### set up client
 
