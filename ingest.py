@@ -88,11 +88,9 @@ def cleanStringData(strng):
      return strng
   return "not available"
 
+batch_size = 50  # number of embeddings we create and insert in a batch
 
-# ===== import data ===== 
-batch_size = 500  # number of embeddings we create and insert in a batch
-# Configure a batch process
-
+# function to create batches from Mongo cursor
 cursor = collection.find({}, batch_size=batch_size)
 def yield_rows(cursor, batch_size):
     """
@@ -111,8 +109,12 @@ def yield_rows(cursor, batch_size):
 
 chunks = yield_rows(cursor, batch_size)
 
-y = 0
-
+y = 0   # batch counter
+######################################################
+###### for each batch of documents,          #########
+###### cleanse data, create embeddings,      #########
+###### update PineCone                       #########
+######################################################
 for chunk in chunks:
     y += 1
     print("Working on batch ", y)
@@ -142,6 +144,22 @@ for chunk in chunks:
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
     texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'description ' + x['description'] + 'price: ' + x['price'] + 'specifications: ' + x['specifications'] for x in meta_batch]
+    try:
+        res = openai.Embedding.create(input=texts, engine=embed_model)
+    except:
+        done = False
+        while not done:
+            sleep(5)
+            try:
+                res = openai.Embedding.create(input=texts, engine=embed_model)
+                done = True
+            except:
+                print("Batch ", y, "failed on embedding")
+                pass
+    embeds = [record['embedding'] for record in res['data']]
+    to_upsert = list(zip(ids_batch, embeds, meta_batch))
+    # upsert to Pinecone
+    index.upsert(vectors=to_upsert)
     if y == 1:
       print(texts[0])
-      print(tiktoken(texts[0]))
+      print(num_tokens_from_string(texts[0],"cl100k_base" ))
