@@ -10,7 +10,7 @@ Use the ```ingest.py``` script to migrate mongo data from Atlas to PineCone, cre
 
 Pay attention to declared data types on each document, ensuring that all properties are uniformly cleansed throughout the collection
 
-
+Use the server ```app.py``` script to handle http calls
 
 
 ### set up client

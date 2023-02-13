@@ -39,7 +39,7 @@ print(index.describe_index_stats())
 ######   openai query before vectors     #####
 ##############################################
 
-query = "what is the lowest priced hammer that is available?"
+query = "You work in a retail store that sells hammers. Summarize the top 3 hammers that you have and provide a price for each."
 
 # function to handle openai prompt
 def complete(prompt):
@@ -74,10 +74,10 @@ def retrieve(query):
 
     # retrieve from Pinecone
     xq = res['data'][0]['embedding']
-
+    
     # get relevant contexts
-    res = index.query(xq, top_k=3, include_metadata=True)
-    print(res)
+    res = index.query(xq, top_k=50, include_metadata=True)
+    #print(res)
     contexts = [
         x['metadata']['description'] for x in res['matches']        
     ]
@@ -108,10 +108,14 @@ def retrieve(query):
                 "\n\n---\n\n".join(contexts) +
                 prompt_end
             )
+    print(contexts[:50])
     return prompt
 
 # using same query prompt - we first retrieve relevant contexts
+
+
 query_with_contexts = retrieve(query)
+print(query_with_contexts)
 
 # then we complete the context-infused query
 vector_result = complete(query_with_contexts)

@@ -88,7 +88,7 @@ def cleanStringData(strng):
      return strng
   return "not available"
 
-batch_size = 250  # number of embeddings we create and insert in a batch
+batch_size = 100  # number of embeddings we create and insert in a batch
 
 # function to create batches from Mongo cursor
 cursor = collection.find({}, batch_size=batch_size)
@@ -130,7 +130,7 @@ for chunk in chunks:
           "description": docs["description"],
           "brand": docs["brand"],
           "skuId": cleanIntegerData(docs["sku_id"]),
-          "price": cleanStringData(docs["color"]),
+          "price": cleanIntegerData(docs["price"]),
           "inStock": docs["in_stock"],
           "currency": docs["currency"],
           "color": cleanStringData(docs["color"]),
@@ -143,7 +143,7 @@ for chunk in chunks:
         } for docs in meta_batch]
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
-    texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'description ' + x['description'] + 'price: ' + x['price'] + 'specifications: ' + x['specifications'] for x in meta_batch]
+    texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'overview: ' + x['overview'] + 'specifications: ' + x['specifications'] for x in meta_batch]
     try:
         res = openai.Embedding.create(input=texts, engine=embed_model)
     except:
