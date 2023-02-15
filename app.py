@@ -39,8 +39,18 @@ print(index.describe_index_stats())
 ######   openai query before vectors     #####
 ##############################################
 
-query = "You work in a retail store that sells hammers. Summarize the top 3 hammers that you have and provide a price for each."
+simplequery = "You work in a retail store that sells hammers. Summarize the top 3 hammers that you have and provide a price for each."
 
+complexquery = """
+    The partial schema for the product catalog is 
+
+    { name: string,
+      brand: string,
+      overview: integer,
+      Manufacturer Warranty: string }
+    
+    Given the following context, write snappy advertisement for the lowest priced hammer retrieved
+"""
 # function to handle openai prompt
 def complete(prompt):
     # query text-davinci-003
@@ -56,7 +66,7 @@ def complete(prompt):
     )
     return res['choices'][0]['text'].strip()
 
-result = complete(query)
+result = complete(simplequery)
 print(result)
 answer_returned = 'The lowest priced hammer available is the Stanley FatMax Xtreme AntiVibe Rip Claw Hammer, which retails for around $10'
 
@@ -76,10 +86,10 @@ def retrieve(query):
     xq = res['data'][0]['embedding']
     
     # get relevant contexts
-    res = index.query(xq, top_k=50, include_metadata=True)
+    res = index.query(xq, top_k=3, include_metadata=True)
     #print(res)
     contexts = [
-        x['metadata']['description'] for x in res['matches']        
+        x['metadata']['overview'] for x in res['matches']        
     ]
     #contexts.append(x['metadata']['name'] for x in res['matches'])
     #contexts.append(x['metadata']['brand'] for x in res['matches'])   
@@ -108,13 +118,13 @@ def retrieve(query):
                 "\n\n---\n\n".join(contexts) +
                 prompt_end
             )
-    print(contexts[:50])
+    #print(contexts[:50])
     return prompt
 
 # using same query prompt - we first retrieve relevant contexts
 
 
-query_with_contexts = retrieve(query)
+query_with_contexts = retrieve(complexquery)
 print(query_with_contexts)
 
 # then we complete the context-infused query

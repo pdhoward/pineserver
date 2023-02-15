@@ -78,16 +78,20 @@ def convertArray(str):
   return str.split('~')
 
 # function to clean integer data from mongo database
-def cleanIntegerData(int):
-  if int is None or int == "":
-     return 0
-  return int
+def cleanIntegerData(x):
+  if isinstance(x, int):
+     return x
+  return 0
 # function to validate that string property is string
 def cleanStringData(strng):
   if type(strng) is str:
      return strng
   return "not available"
-
+# function to clean integer data from mongo database
+def cleanFloatData(flt):
+  if isinstance(flt, float):
+     return flt
+  return 0.0
 batch_size = 100  # number of embeddings we create and insert in a batch
 
 # function to create batches from Mongo cursor
@@ -130,7 +134,7 @@ for chunk in chunks:
           "description": docs["description"],
           "brand": docs["brand"],
           "skuId": cleanIntegerData(docs["sku_id"]),
-          "price": cleanIntegerData(docs["price"]),
+          "price": cleanFloatData(docs["price"]),
           "inStock": docs["in_stock"],
           "currency": docs["currency"],
           "color": cleanStringData(docs["color"]),
