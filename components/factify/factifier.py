@@ -115,7 +115,8 @@ class Factifier(Chain):
 
         facts = self._parse(facts_raw.splitlines(), prefix=r"-+")
         return facts, context
-
+    ###### debug#######
+    y=0
     def factify(self, doc: Document) -> list[str]:
         """Returns a list of facts from the given document."""
 

@@ -39,6 +39,69 @@ res = openai.Embedding.create(
 
 """
 
+content = """Your task is to take the content from of a product catalog, and summarize 5 unique pertinent facts about the content. Do not make up any facts not found in the content 
+Here is an example:
+catalog: {
+"name": "Feathers In Watercolor Design by Third and Wall Framed Wall Art 11 in. x 14 in.",
+"price": 32.11,
+"specifications": "[{'Art Movement': 'Abstract Expressionism'}, {'Art Material': 'Wood'}, {'Includes': 'No additional hardware'}, {'Frame Primary Finish': 'Silver'}, {'Theme': 'Abstract'}, {'Artwork name': 'Feathers In Watercolor Design'}, {\"Artist's name\": 'Third and Wall'}, {'Print Type': 'Graphic Print'}, {'Wall Decor Type': 'Wall Art'}, {'Art Medium': 'Graphic Art'}, {'Frame Color/Finish': 'Grey'}, {'Returnable': '90-Day'}, {'Mount Type': 'Wall Mount'}, {'Number of Pieces Included': '1 Piece'}, {'Subject': 'Abstract'}, {'Orientation': 'Portrait'}, {'Color/Finish': 'Multi-Color'}, {'Art Classification': 'Contemporary Looks'}, {'Color Family': 'Multi-Colored'}, {'Hanging method': 'Other'}, {'Features': 'No Additional Features'}, {'Product Weight (lb.)': '2'}, {'Frame Type': 'Framed'}, {'Product Height (in.)': '14'}, {'Product Depth (in.)': '1.5'}, {'Product Width (in.)': '11'}]",
+}
+summary: [
+"Art work by the artist Third and Wall called Feathers in Watercolor",
+"Art work with a price of 32.11",
+"Portrait wall art with dimensions of 11 in X 1.5 in X 14 in. with a product weight of 2 lbs",
+"Product is returnable in 90 days",
+"Frame primary finaish is silver and grey."
+]
+Here is another example: 
+catalog: {
+"name": "#10-24 x 3/8 in. Black Oxide Coated Steel Set Screws (25-Pack)",
+"price": 11.81,
+"specifications": "[{'Features': 'No Additional Features'}, {'Fastener Type': 'Set Screws'}, {'Interior/Exterior': 'Interior'}, {'Measurement Standard': 'SAE'}, {'Drive Style': 'Internal Hex'}, {'Returnable': '90-Day'}, {'Fastener/Connector Material': 'Alloy'}, {'Fastener Plating': 'Black Oxide'}, {'Head Style': 'Headless'}, {'Color Family': 'Black'}, {'Included': 'No Additional Items Included'}, {'Finish': 'Black Oxide'}, {'Product Weight (lb.)': '0.005'}, {'Package Quantity': '25'}, {'Size': '#10'}, {'Manufacturer Warranty': 'Goods are warranted against manufacturing defects for 1 year. In no case is Prime-Line responsible for user related damage or damage incurred during installation. Warranty is void if products are subjected to abnormal conditions, misapplication or abuse.'}, {'Screw Length': '3/8 in'}, {'Thread Pitch': '24'}]"
+}
+summary: [
+"Set of Screws with a length of 3/8 in",
+"The screws are Black Oxide plating, and are intended for interior use",
+"The package quantity is 25. The size is #10. The thread pitch is 24",
+"The price is 11.81",
+"Goods are warranted against manufacturing defects for 1 year. The warranty is void if products are subjected to abnormal conditions, misapplication or abuse."
+]
+Now for real:
+catalog: {
+"name": "#10-32 Stainless Steel Fine Cap Nut",
+"price": 78.12,
+"specifications": "[{'Thread pitch': '32.0'}, {'Fastener Thread Type': 'Fine'}, {'Fastener Type': 'Cap Nut'}, {'Grade': 'A307'}, {'Material': 'Steel'}, {'Measurement Standard': 'SAE'}, {'Returnable': '90-Day'}, {'Fastener Plating': 'Zinc'}, {'ACQ Rated Fastener': 'Yes'}, {'Fastener Callout Size': '#10-32'}, {'Product Weight (lb.)': '0.01 lb'}, {'Package Quantity': '1'}, {'Size': '#10'}, {'Finish Family': 'Metallic'}, {'Manufacturer Warranty': 'None'}, {'Assembled Depth (in.)': '0.52 in'}, {'Outside Width (in.)': '0.375 in'}, {'Assembled Width (in.)': '0.375 in'}, {'Inside Diameter': '0.19 in'}, {'Assembled Height (in.)': '0.433 in'}]"
+summary: []
+}
+
+
+"""
+
+####################################################
+#############  text turbo chat     #################
+####################################################
+
+turboresponse = openai.ChatCompletion.create(
+  model="gpt-3.5-turbo",
+  messages=[
+        {"role": "system", "content": content},
+       
+    ]
+)
+
+"""
+ {"role": "user", "content": "Who won the world series in 2020?"},
+        {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
+        {"role": "user", "content": "Where was it played?"}
+"""
+print(" --------- testing turbo ---------")
+print(turboresponse['choices'][0]['messages']['content'])
+print(turboresponse['usage']['total_tokens'])
+
+
+
+#####################################################
+
 index_name = 'product'
 
 # initialize connection to pinecone (get API key at app.pinecone.io)
@@ -127,6 +190,9 @@ y = 0   # batch counter
 ###### update PineCone                       #########
 ######################################################
 
+f = Factifier({'context': 'You are a sales person giving the facts on a product'})
+
+"""
 
 for chunk in chunks:
     y += 1
@@ -157,9 +223,13 @@ for chunk in chunks:
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
     texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'overview: ' + x['overview'] + 'specifications: ' + x['specifications'] for x in meta_batch]
-    refactor = [Factifier(x) for x in meta_batch]
     
-    """    
+    doc = 'here are the facts, x is good. y is better. paris is in france. charlotte is in nc'
+    #refactor = [f.factify(x['overview']) for x in meta_batch]
+    #refactor = [f.factify({'page_content': doc})]
+
+
+    
     try:
         res = openai.Embedding.create(input=texts, engine=embed_model)
     except:
@@ -176,8 +246,8 @@ for chunk in chunks:
     to_upsert = list(zip(ids_batch, embeds, meta_batch))
     # upsert to Pinecone
     index.upsert(vectors=to_upsert)
-    """
+    
     if y == 1:
-      print(texts[0])
-      print(refactor[0].__dict__)
+      print(texts[0])      
       print(num_tokens_from_string(texts[0],"cl100k_base" ))
+"""
