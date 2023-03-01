@@ -8,6 +8,7 @@ import tiktoken
 from time import sleep
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from components.factify import Factifier
 
 load_dotenv()
 
@@ -94,6 +95,12 @@ def cleanFloatData(flt):
   return 0.0
 batch_size = 100  # number of embeddings we create and insert in a batch
 
+######################################
+###        prompt engineering     ####
+###  simplify product catalogue   ####
+###         for q & a             ####
+######################################
+
 # function to create batches from Mongo cursor
 cursor = collection.find({}, batch_size=batch_size)
 def yield_rows(cursor, batch_size):
@@ -150,6 +157,7 @@ for chunk in chunks:
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
     texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'overview: ' + x['overview'] + 'specifications: ' + x['specifications'] for x in meta_batch]
+    refactor = [Factifier(x) for x in meta_batch]
     
     """    
     try:
@@ -171,4 +179,5 @@ for chunk in chunks:
     """
     if y == 1:
       print(texts[0])
+      print(refactor[0].__dict__)
       print(num_tokens_from_string(texts[0],"cl100k_base" ))
