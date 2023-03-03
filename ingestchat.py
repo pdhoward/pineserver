@@ -97,7 +97,7 @@ def cleanFloatData(flt):
 #############  text turbo chat     #################
 ####################################################
 # function to summarize dense product catalog content for use as the vector
-context = """Take the content from of a product catalog, and summarize 7 unique pertinent facts about the content from the description and specifications. One of the facts should be price. Do not make up any facts not found in the content. If price is not available include a statement that price is not published. Do not number the facts."""
+context = """Take the content from of a product catalog, and summarize 7 unique pertinent facts about the content from the name, brand, description and specifications. One of the facts should be price. Do not make up any facts not found in the content. If price is not available include a statement that price is not published. Do not number the facts."""
 def createVectorString(param):
   turboresponse = openai.ChatCompletion.create(
   model="gpt-3.5-turbo",
@@ -164,10 +164,10 @@ for chunk in chunks:
         } for docs in meta_batch]
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
-    texts = ['product catalogue: name: ' + x['name'] + 'brand: ' + x['brand'] + 'description: ' + x['description'] + 'specifications: ' + x['specifications'] for x in meta_batch]
+    texts = [createVectorString('product catalogue: name: ' + x['name'] + 'brand: ' + x['brand'] + 'description: ' + x['description'] + 'price ' + str(x['price']) + 'specifications: ' + x['specifications']) for x in meta_batch]
     
-    vectortext = createVectorString(vectortext)
-    """
+    #vectortext = createVectorString(texts)
+    
    
     try:
         res = openai.Embedding.create(input=texts, engine=embed_model)
@@ -184,12 +184,9 @@ for chunk in chunks:
     embeds = [record['embedding'] for record in res['data']]
     to_upsert = list(zip(ids_batch, embeds, meta_batch))
     # upsert to Pinecone
-    index.upsert(vectors=to_upsert)
-
-    """
+    index.upsert(vectors=to_upsert)    
     
     if y < 10:
-      print("-------- " + y + " ---------")
-      print(texts[0])
-      print(vectortext)
-      print(num_tokens_from_string(texts[0],"cl100k_base" ))
+      print(y)
+      print(texts[y])      
+      print(num_tokens_from_string(texts[y],"cl100k_base" ))
