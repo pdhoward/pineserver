@@ -143,11 +143,12 @@ for chunk in chunks:
           "totalReviews": cleanIntegerData(docs["total_reviews"]),
           "overview": docs["overview"],
           "specifications": docs["specifications"],
+          "vector": docs["vector"],
           "productId": docs["id"]
         } for docs in meta_batch]
     # create 
     ids_batch = [x['objectId'] for x in meta_batch]
-    texts = ['name: ' + x['name'] + 'brand: ' + x['brand'] + 'overview: ' + x['overview'] + 'specifications: ' + x['specifications'] for x in meta_batch]
+    texts = [x['vector'] for x in meta_batch]
     try:
         res = openai.Embedding.create(input=texts, engine=embed_model)
     except:
